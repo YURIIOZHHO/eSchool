@@ -35,16 +35,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: SonarCloud scan
-        uses: SonarSource/sonarqube-scan-action@v2
-        env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=eschool-backend-final-project
-            -Dsonar.projectName=Eschool-Backend-Final
-            -Dsonar.sources=src
+      - name: Build and analyze with Maven
+        run: mvn clean verify sonar:sonar \
+             -Dsonar.projectKey=eschool-backend-final-project \
+             -Dsonar.projectName=Eschool-Backend-Final \
+             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
   # docker-build-and-push:
   #   name: Build & Push Docker image
