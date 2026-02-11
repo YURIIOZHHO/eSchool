@@ -41,11 +41,6 @@ jobs:
             -Dsonar.token=$SONAR_TOKEN \
             -DskipTests
 
-      - name: Show report-task.txt
-        run: |
-          ls -la target/sonar
-          cat target/sonar/report-task.txt
-
       - name: SonarQube Quality Gate
         id: quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
@@ -55,10 +50,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Output Quality Gate Status
-        run: |
-          echo "The Quality Gate status is ${{ steps.quality-gate-check.outputs.project-status }}"
 
 
   #     - name: Push image
