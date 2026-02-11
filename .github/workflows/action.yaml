@@ -3,13 +3,13 @@ name: Backend CI/CD
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
-  IMAGE_NAME: eschool
+  IMAGE_NAME: eschool-backend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -35,16 +35,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: Sonar scan
-        env:
-          SONAR_HOST: ${{ secrets.SONAR_HOST }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Ensure SonarCloud project exists
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.projectKey=eschool-backend-final-project \
-            -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.login=$SONAR_TOKEN
+          curl -s -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
+            -d "name=Eschool-Backend-Final&project=eschool-backend-final-project&organization=${{ secrets.SONAR_ORGANIZATION }}&visibility=private" \
+            https://sonarcloud.io/api/projects/create || echo "Project already exists"
 
+      - name: SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v2
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=eschool-backend-final-project
+            -Dsonar.projectName=Eschool-Backend-Final
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.sources=src
+            -Dsonar.branch.name=${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
   docker-build-and-push:
     name: Build & Push Docker image
