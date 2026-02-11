@@ -46,27 +46,27 @@ jobs:
             -Dsonar.projectName=Eschool-Backend-Final
             -Dsonar.sources=src
 
-  docker-build-and-push:
-    name: Build & Push Docker image
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
+  # docker-build-and-push:
+  #   name: Build & Push Docker image
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name != 'pull_request'
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Docker login
-        run: echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  #     - name: Docker login
+  #       run: echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-      - name: Build image
-        run: |
-          docker build \
-            -t $DOCKER_USERNAME/$IMAGE_NAME:backend-${GITHUB_RUN_NUMBER} \
-            -t $DOCKER_USERNAME/$IMAGE_NAME:backend-latest \
-            .
+  #     - name: Build image
+  #       run: |
+  #         docker build \
+  #           -t $DOCKER_USERNAME/$IMAGE_NAME:backend-${GITHUB_RUN_NUMBER} \
+  #           -t $DOCKER_USERNAME/$IMAGE_NAME:backend-latest \
+  #           .
 
-      - name: Push image
-        run: |
-          docker push $DOCKER_USERNAME/$IMAGE_NAME:backend-${GITHUB_RUN_NUMBER}
-          docker push $DOCKER_USERNAME/$IMAGE_NAME:backend-latest
+  #     - name: Push image
+  #       run: |
+  #         docker push $DOCKER_USERNAME/$IMAGE_NAME:backend-${GITHUB_RUN_NUMBER}
+  #         docker push $DOCKER_USERNAME/$IMAGE_NAME:backend-latest
 
   # deploy:
   #   name: Deploy Backend
