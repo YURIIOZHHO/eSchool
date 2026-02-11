@@ -36,21 +36,23 @@ jobs:
             ${{ runner.os }}-m2-
 
       - name: Build and analyze with Maven
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn clean compile sonar:sonar \
+          mvn clean verify sonar:sonar \
             -Dsonar.projectKey=eschool-backend-final-project \
             -Dsonar.projectName=Eschool-Backend-Final \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=src/main/java
-
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.token=$SONAR_TOKEN
+            
       - name: SonarQube Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-report@master
+        uses: sonarsource/sonarqube-quality-gate-action@v2
         with:
-          SONAR_HOST: ${{ secrets.SONAR_HOST_URL }}
+          scanMetadataReportFile: target/sonar/report-task.txt
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          PROJECT_KEY: eschool-backend-final-project
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
   # docker-build-and-push:
   #   name: Build & Push Docker image
