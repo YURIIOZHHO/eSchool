@@ -36,11 +36,12 @@ jobs:
             ${{ runner.os }}-m2-
 
       - name: Build and analyze with Maven
-        run: mvn clean verify sonar:sonar \
-             -Dsonar.projectKey=eschool-backend-final-project \
-             -Dsonar.projectName=Eschool-Backend-Final \
-             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: | 
+          mvn clean verify sonar:sonar \
+           -Dsonar.projectKey=eschool-backend-final-project \
+           -Dsonar.projectName=Eschool-Backend-Final \
+           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
   # docker-build-and-push:
   #   name: Build & Push Docker image
