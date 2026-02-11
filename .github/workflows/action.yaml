@@ -41,6 +41,11 @@ jobs:
             -Dsonar.token=$SONAR_TOKEN \
             -DskipTests
 
+      - name: Show report-task.txt
+        run: |
+          ls -la target/sonar
+          cat target/sonar/report-task.txt
+
       - name: SonarQube Quality Gate
         id: quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@v1
