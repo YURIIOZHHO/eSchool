@@ -44,6 +44,14 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=src/main/java
 
+      - name: SonarQube Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-report@master
+        with:
+          SONAR_HOST: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PROJECT_KEY: eschool-backend-final-project
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
   # docker-build-and-push:
   #   name: Build & Push Docker image
   #   runs-on: ubuntu-latest
