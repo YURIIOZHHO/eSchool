@@ -96,7 +96,8 @@ jobs:
               });
               
               
-              const body = **SonarQube Analysis Results**
+              const body =`
+              **SonarQube Analysis Results**
       
               **New Code (PR Changes):**
               Bugs: ${newCodeMetrics.bugs || '0'}
