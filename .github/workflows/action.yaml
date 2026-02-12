@@ -7,7 +7,7 @@ env:
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master ]  
   pull_request:
   workflow_dispatch:
 
@@ -16,7 +16,7 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-  
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,14 +35,19 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
+
+          BASE_BRANCH=master
+
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=eschool-backend-final-project \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=master \
-            -DskipTests
+            -Dsonar.pullrequest.base=$BASE_BRANCH \
+            -DskipTests \
+            -Dmaven.project.sourceRoots.warningsDisabled=true
+
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
