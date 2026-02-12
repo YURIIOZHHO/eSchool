@@ -61,19 +61,21 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          
+          # Запит для New Code
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
           
-          
+          # Запит для Overall Code
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
-    
-          NEW_CODE_ESCAPED=$(echo "$NEW_CODE" | jq -R -s '.')
-          OVERALL_ESCAPED=$(echo "$OVERALL" | jq -R -s '.')
       
-          echo "new_code=$NEW_CODE_ESCAPED" >> $GITHUB_OUTPUT
-          echo "overall=$OVERALL_ESCAPED" >> $GITHUB_OUTPUT
+          echo "new_code<<EOF" >> $GITHUB_OUTPUT
+          echo "$NEW_CODE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+          echo "overall<<EOF" >> $GITHUB_OUTPUT
+          echo "$OVERALL" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
         if: github.event_name == 'pull_request'
@@ -83,17 +85,25 @@ jobs:
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
             
             try {
-             
-              const newCodeStr = JSON.parse('${{ steps.sonar-report.outputs.new_code }}');
-              const overallStr = JSON.parse('${{ steps.sonar-report.outputs.overall }}');
+              const newCode = JSON.parse(`${{ steps.sonar-report.outputs.new_code }}`);
+              const overall = JSON.parse(`${{ steps.sonar-report.outputs.overall }}`);
               
-              const newCode = JSON.parse(newCodeStr);
-              const overall = JSON.parse(overallStr);
+              console.log('New Code:', JSON.stringify(newCode).substring(0, 200));
+              console.log('Overall:', JSON.stringify(overall).substring(0, 200));
+
+              if (newCode.errors) {
+                console.error('New Code API Error:', newCode.errors);
+                throw new Error('New Code API error');
+              }
               
               const newCodeMetrics = {};
               if (newCode.component && newCode.component.measures) {
                 newCode.component.measures.forEach(m => {
-                  newCodeMetrics[m.metric] = m.value || '0';
+                  if (m.periods && m.periods.length > 0) {
+                    newCodeMetrics[m.metric] = m.periods[0].value || '0';
+                  } else {
+                    newCodeMetrics[m.metric] = m.value || '0';
+                  }
                 });
               }
               
@@ -105,40 +115,40 @@ jobs:
               }
               
               const body = `**SonarQube Analysis Results**
-      
-            **New Code (PR Changes):**
-            Bugs: ${newCodeMetrics.bugs || '0'}
-            Vulnerabilities: ${newCodeMetrics.vulnerabilities || '0'}
-            Code Smells: ${newCodeMetrics.code_smells || '0'}
-            Coverage: ${newCodeMetrics.coverage || 'N/A'}%
             
-            **Overall Code (Full Project):**
-            Bugs: ${overallMetrics.bugs || '0'}
-            Vulnerabilities: ${overallMetrics.vulnerabilities || '0'}
-            Code Smells: ${overallMetrics.code_smells || '0'}
-            Coverage: ${overallMetrics.coverage || 'N/A'}%
-            Lines of Code: ${overallMetrics.ncloc || '0'}
-            
-            Quality Gate: **${qualityGateStatus}**
-            
-            [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
-                    
-                    github.rest.issues.createComment({
-                      issue_number: context.issue.number,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      body: body
-                    });
-                  } catch (error) {
-                    console.error('Error parsing SonarQube data:', error);
-                    
-                    github.rest.issues.createComment({
-                      issue_number: context.issue.number,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      body: `Quality Gate: **${qualityGateStatus}**\n\n[View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`
-                    });
-                  }
+              **New Code (PR Changes):**
+              Bugs: ${newCodeMetrics.bugs || '0'}
+              Vulnerabilities: ${newCodeMetrics.vulnerabilities || '0'}
+              Code Smells: ${newCodeMetrics.code_smells || '0'}
+              Coverage: ${newCodeMetrics.coverage || 'N/A'}%
+              
+              **Overall Code (Full Project):**
+              Bugs: ${overallMetrics.bugs || '0'}
+              Vulnerabilities: ${overallMetrics.vulnerabilities || '0'}
+              Code Smells: ${overallMetrics.code_smells || '0'}
+              Coverage: ${overallMetrics.coverage || 'N/A'}%
+              Lines of Code: ${overallMetrics.ncloc || '0'}
+              
+              Quality Gate: **${qualityGateStatus}**
+              
+              [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
+                      
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: body
+                });
+              } catch (error) {
+                console.error('Error parsing SonarQube data:', error);
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `Quality Gate: **${qualityGateStatus}**\n\n[View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`
+                });
+              }
                   
   # docker-build-and-push:
   #   name: Build & Push Docker image
