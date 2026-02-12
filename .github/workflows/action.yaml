@@ -63,15 +63,12 @@ jobs:
         run: |
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
-          
+      
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
       
-          NEW_CODE_ESCAPED=$(echo "$NEW_CODE" | jq -Rs .)
-          OVERALL_ESCAPED=$(echo "$OVERALL" | jq -Rs .)
-      
-          echo "new_code=$NEW_CODE_ESCAPED" >> $GITHUB_OUTPUT
-          echo "overall=$OVERALL_ESCAPED" >> $GITHUB_OUTPUT
+          echo "new_code_b64=$(echo "$NEW_CODE" | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "overall_b64=$(echo "$OVERALL" | base64 -w 0)" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
         if: github.event_name == 'pull_request'
@@ -79,40 +76,23 @@ jobs:
         with:
           script: |
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
-            
-            try {
-              const newCodeStr = JSON.parse('${{ steps.sonar-report.outputs.new_code }}');
-              const overallStr = JSON.parse('${{ steps.sonar-report.outputs.overall }}');
-
-              const newCode = JSON.parse(newCodeStr);
-              const overall = JSON.parse(overallStr);
-              
-              if (newCode.errors) {
-                console.error('New Code API Error:', newCode.errors);
-                throw new Error('New Code API error: ' + newCode.errors[0].msg);
-              }
-
-              const newCodeMetrics = {};
-              if (newCode.component && newCode.component.measures) {
-                newCode.component.measures.forEach(m => {
-                  if (m.periods && m.periods.length > 0) {
-                    newCodeMetrics[m.metric] = m.periods[0].value || '0';
-                  } else {
-                    newCodeMetrics[m.metric] = m.value || '0';
-                  }
-                });
-              }
-
-              const overallMetrics = {};
-              if (overall.component && overall.component.measures) {
-                overall.component.measures.forEach(m => {
-                  overallMetrics[m.metric] = m.value || '0';
-                });
-              }
-              
-              const body = `**SonarQube Analysis Results**
+      
+            const newCodeJson = Buffer
+              .from('${{ steps.sonar-report.outputs.new_code_b64 }}', 'base64')
+              .toString();
+      
+            const overallJson = Buffer
+              .from('${{ steps.sonar-report.outputs.overall_b64 }}', 'base64')
+              .toString();
+      
+            const newCode = JSON.parse(newCodeJson);
+            const overall = JSON.parse(overallJson);
+      
+            const body = `SonarQube Analysis
+      
+            Quality Gate: **${qualityGateStatus}**
         
-              [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
+            [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
                       
                 github.rest.issues.createComment({
                   issue_number: context.issue.number,
