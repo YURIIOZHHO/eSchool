@@ -13,19 +13,19 @@ public class Transliteration {
      */
     private static HashMap<Character, String> letters = new HashMap<>();
 
-    static {
-        letters.put('а', "a");    letters.put('б', "b");    letters.put('в', "v");    letters.put('г', "h");
-        letters.put('ґ', "g");    letters.put('д', "d");    letters.put('е', "e");    letters.put('є', "ie");
-        letters.put('ж', "zh");   letters.put('з', "z");    letters.put('и', "y");    letters.put('і', "i");
-        letters.put('ї', "i");    letters.put('й', "i");    letters.put('к', "k");    letters.put('л', "l");
-        letters.put('м', "m");    letters.put('н', "n");    letters.put('о', "o");    letters.put('п', "p");
-        letters.put('р', "r");    letters.put('с', "s");    letters.put('т', "t");    letters.put('у', "u");
-        letters.put('ф', "f");    letters.put('х', "kh");   letters.put('ц', "ts");   letters.put('ч', "ch");
-        letters.put('ш', "sh");   letters.put('щ', "shch"); letters.put('ь', "");     letters.put('ю', "iu");
-        letters.put('я', "ia");   letters.put('\'', "");
-    }
+    // static {
+    //     letters.put('а', "a");    letters.put('б', "b");    letters.put('в', "v");    letters.put('г', "h");
+    //     letters.put('ґ', "g");    letters.put('д', "d");    letters.put('е', "e");    letters.put('є', "ie");
+    //     letters.put('ж', "zh");   letters.put('з', "z");    letters.put('и', "y");    letters.put('і', "i");
+    //     letters.put('ї', "i");    letters.put('й', "i");    letters.put('к', "k");    letters.put('л', "l");
+    //     letters.put('м', "m");    letters.put('н', "n");    letters.put('о', "o");    letters.put('п', "p");
+    //     letters.put('р', "r");    letters.put('с', "s");    letters.put('т', "t");    letters.put('у', "u");
+    //     letters.put('ф', "f");    letters.put('х', "kh");   letters.put('ц', "ts");   letters.put('ч', "ch");
+    //     letters.put('ш', "sh");   letters.put('щ', "shch"); letters.put('ь', "");     letters.put('ю', "iu");
+    //     letters.put('я', "ia");   letters.put('\'', "");
+    // }
 
-    /**
+    // /**
      *
      * @param word word for transliteration
      * @return transliterated word
