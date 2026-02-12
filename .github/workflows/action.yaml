@@ -80,7 +80,7 @@ jobs:
             
             const isSuccess = qualityGateStatus === 'PASSED';
             
-            const body = `${statusEmoji} **SonarQube Analysis Results**
+            const body = `**SonarQube Analysis Results**
       
             Bugs: ${measures.bugs || '0'}
             Vulnerabilities: ${measures.vulnerabilities || '0'}
