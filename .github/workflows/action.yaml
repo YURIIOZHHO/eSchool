@@ -53,7 +53,7 @@ jobs:
 
       - name: "Example show SonarQube Quality Gate Status value"
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
-            
+                  
       - name: Get SonarQube Report (New Code + Overall)
         id: sonar-report
         if: github.event_name == 'pull_request'
@@ -61,21 +61,17 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          # Запит для New Code
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
           
-          # Запит для Overall Code
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
       
-          echo "new_code<<EOF" >> $GITHUB_OUTPUT
-          echo "$NEW_CODE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          NEW_CODE_ESCAPED=$(echo "$NEW_CODE" | jq -Rs .)
+          OVERALL_ESCAPED=$(echo "$OVERALL" | jq -Rs .)
       
-          echo "overall<<EOF" >> $GITHUB_OUTPUT
-          echo "$OVERALL" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "new_code=$NEW_CODE_ESCAPED" >> $GITHUB_OUTPUT
+          echo "overall=$OVERALL_ESCAPED" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
         if: github.event_name == 'pull_request'
@@ -85,17 +81,17 @@ jobs:
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
             
             try {
-              const newCode = JSON.parse(`${{ steps.sonar-report.outputs.new_code }}`);
-              const overall = JSON.parse(`${{ steps.sonar-report.outputs.overall }}`);
-              
-              console.log('New Code:', JSON.stringify(newCode).substring(0, 200));
-              console.log('Overall:', JSON.stringify(overall).substring(0, 200));
+              const newCodeStr = JSON.parse('${{ steps.sonar-report.outputs.new_code }}');
+              const overallStr = JSON.parse('${{ steps.sonar-report.outputs.overall }}');
 
+              const newCode = JSON.parse(newCodeStr);
+              const overall = JSON.parse(overallStr);
+              
               if (newCode.errors) {
                 console.error('New Code API Error:', newCode.errors);
-                throw new Error('New Code API error');
+                throw new Error('New Code API error: ' + newCode.errors[0].msg);
               }
-              
+
               const newCodeMetrics = {};
               if (newCode.component && newCode.component.measures) {
                 newCode.component.measures.forEach(m => {
@@ -106,7 +102,7 @@ jobs:
                   }
                 });
               }
-              
+
               const overallMetrics = {};
               if (overall.component && overall.component.measures) {
                 overall.component.measures.forEach(m => {
@@ -115,22 +111,7 @@ jobs:
               }
               
               const body = `**SonarQube Analysis Results**
-            
-              **New Code (PR Changes):**
-              Bugs: ${newCodeMetrics.bugs || '0'}
-              Vulnerabilities: ${newCodeMetrics.vulnerabilities || '0'}
-              Code Smells: ${newCodeMetrics.code_smells || '0'}
-              Coverage: ${newCodeMetrics.coverage || 'N/A'}%
-              
-              **Overall Code (Full Project):**
-              Bugs: ${overallMetrics.bugs || '0'}
-              Vulnerabilities: ${overallMetrics.vulnerabilities || '0'}
-              Code Smells: ${overallMetrics.code_smells || '0'}
-              Coverage: ${overallMetrics.coverage || 'N/A'}%
-              Lines of Code: ${overallMetrics.ncloc || '0'}
-              
-              Quality Gate: **${qualityGateStatus}**
-              
+        
               [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
                       
                 github.rest.issues.createComment({
