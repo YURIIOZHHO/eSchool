@@ -53,7 +53,7 @@ jobs:
 
       - name: "Example show SonarQube Quality Gate Status value"
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
-      
+            
       - name: Get SonarQube Report
         id: sonar-report
         if: github.event_name == 'pull_request'
@@ -61,10 +61,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          curl -v -u "$SONAR_TOKEN:" "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc"
-          REPORT=$(curl -s -u "$SONAR_TOKEN": \
+          REPORT=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
-          echo "report=$REPORT" >> $GITHUB_OUTPUT
+          REPORT_ESCAPED=$(echo "$REPORT" | jq -R -s '.')
+          echo "report=$REPORT_ESCAPED" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
         if: github.event_name == 'pull_request'
@@ -72,14 +72,13 @@ jobs:
         with:
           script: |
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
-            const report = JSON.parse(` ${{ steps.sonar-report.outputs.report }}`);
+            const reportRaw = ${{ steps.sonar-report.outputs.report }};
+            const report = JSON.parse(reportRaw);
             
             const measures = report.component.measures.reduce((acc, m) => {
               acc[m.metric] = m.value || '0';
               return acc;
             }, {});
-            
-            const isSuccess = qualityGateStatus === 'PASSED';
             
             const body = `**SonarQube Analysis Results**
       
@@ -88,9 +87,9 @@ jobs:
             Code Smells: ${measures.code_smells || '0'}
             Coverage: ${measures.coverage || 'N/A'}%
             Lines of Code: ${measures.ncloc || '0'}
-      
+            
             Quality Gate: **${qualityGateStatus}**
-      
+            
             [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
             
             github.rest.issues.createComment({
@@ -99,7 +98,7 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
-
+            
   # docker-build-and-push:
   #   name: Build & Push Docker image
   #   runs-on: ubuntu-latest
