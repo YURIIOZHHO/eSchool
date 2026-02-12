@@ -62,10 +62,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
-            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
       
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
-            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
       
           echo "new_code_b64=$(echo "$NEW_CODE" | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "overall_b64=$(echo "$OVERALL" | base64 -w 0)" >> $GITHUB_OUTPUT
@@ -109,6 +109,9 @@ jobs:
             ### Quality Gate: **${qualityGateStatus}**
             
             ### New Code
+            - Security rating on new code: ${newMetrics.software_quality_security_rating?.new}
+            - Reliability rating on new code: ${newMetrics.software_quality_reliability_rating?.new}
+            - Duplicated lines density (%) on new code: ${newMetrics.duplicated_lines_density?.new}
             - Bugs: ${newMetrics.bugs?.new}
             - Vulnerabilities: ${newMetrics.vulnerabilities?.new}
             - Code Smells: ${newMetrics.code_smells?.new}
@@ -117,6 +120,9 @@ jobs:
             ---
             
             ### Overall Code
+            - Security Rating: ${overallMetrics.software_quality_security_rating?.overall}
+            - Reliability rating: ${overallMetrics.software_quality_reliability_rating?.overall}
+            - Duplicated lines density (%): ${overallMetrics.duplicated_lines_density?.overall}
             - Bugs: ${overallMetrics.bugs?.overall}
             - Vulnerabilities: ${overallMetrics.vulnerabilities?.overall}
             - Code Smells: ${overallMetrics.code_smells?.overall}
