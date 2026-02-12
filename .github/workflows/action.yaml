@@ -63,7 +63,7 @@ jobs:
         run: |
           
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
-            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=periods")
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
           
           
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
