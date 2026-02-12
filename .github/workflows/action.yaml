@@ -68,9 +68,12 @@ jobs:
           # цей запит для Overall Code
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
             "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
-          
-          echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
-          echo "overall=$OVERALL" >> $GITHUB_OUTPUT
+
+          NEW_CODE_ESCAPED=$(echo "$NEW_CODET" | jq -R -s '.')
+          echo "new_code_escaped=$NEW_CODE_ESCAPED" >> $GITHUB_OUTPUT
+
+          OVERALL_ESCAPED=$(echo "$OVERALL" | jq -R -s '.')
+          echo "overall_escaped=$NEW_CODE_ESCAPED" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
         if: github.event_name == 'pull_request'
@@ -80,8 +83,8 @@ jobs:
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
             
             try {
-              const newCode = JSON.parse(`${{ steps.sonar-report.outputs.new_code }}`);
-              const overall = JSON.parse(`${{ steps.sonar-report.outputs.overall }}`);
+              const newCode = JSON.parse(`${{ steps.sonar-report.outputs.new_code_escaped }}`);
+              const overall = JSON.parse(`${{ steps.sonar-report.outputs.overall_escaped }}`);
               
               // Парс New Code метрик
               const newCodeMetrics = {};
