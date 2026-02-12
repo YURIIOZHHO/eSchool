@@ -72,7 +72,9 @@ jobs:
         with:
           script: |
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
-            const report = JSON.parse('${{ steps.sonar-report.outputs.report }}');
+            const report = JSON.parse(`${
+              steps.sonar-report.outputs.report
+            }`);
             
             const measures = report.component.measures.reduce((acc, m) => {
               acc[m.metric] = m.value || '0';
