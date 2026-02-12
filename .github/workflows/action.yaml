@@ -77,39 +77,46 @@ jobs:
           script: |
             const qualityGateStatus = '${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}';
       
-            const newCodeJson = Buffer
-              .from('${{ steps.sonar-report.outputs.new_code_b64 }}', 'base64')
-              .toString();
+            try {
+              const newCodeJson = Buffer
+                .from('${{ steps.sonar-report.outputs.new_code_b64 }}', 'base64')
+                .toString();
       
-            const overallJson = Buffer
-              .from('${{ steps.sonar-report.outputs.overall_b64 }}', 'base64')
-              .toString();
+              const overallJson = Buffer
+                .from('${{ steps.sonar-report.outputs.overall_b64 }}', 'base64')
+                .toString();
       
-            const newCode = JSON.parse(newCodeJson);
-            const overall = JSON.parse(overallJson);
+              const newCode = JSON.parse(newCodeJson);
+              const overall = JSON.parse(overallJson);
       
-            const body = `SonarQube Analysis
+              const body = `SonarQube Analysis
       
-            Quality Gate: **${qualityGateStatus}**
-        
-            [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`;
-                      
-                github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: body
-                });
-              } catch (error) {
-                console.error('Error parsing SonarQube data:', error);
-                
-                github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `Quality Gate: **${qualityGateStatus}**\n\n[View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`
-                });
-              }
+              Quality Gate: **${qualityGateStatus}**
+              
+              [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)
+              `;
+              
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body
+                      });
+              
+                    } catch (error) {
+                      console.error(error);
+              
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: ` SonarQube parsing error
+              
+              Quality Gate: **${qualityGateStatus}**
+              
+              [View Full Report](${{ secrets.SONAR_HOST_URL }}/dashboard)`
+                      });
+                    }
                   
   # docker-build-and-push:
   #   name: Build & Push Docker image
