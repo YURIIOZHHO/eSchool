@@ -42,7 +42,7 @@ jobs:
             -DskipTests
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
+            -Dsonar.pullrequest.base=master
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
