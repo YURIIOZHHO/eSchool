@@ -62,10 +62,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           NEW_CODE=$(curl -s -u "$SONAR_TOKEN:" \
-            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,bugs,vulnerabilities,code_smells,coverage&additionalFields=period")
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,software_quality_reliability_issues,vulnerabilities,code_smells,coverage,security_hotspots&additionalFields=period")
       
           OVERALL=$(curl -s -u "$SONAR_TOKEN:" \
-            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=software_quality_security_rating,software_quality_reliability_rating,duplicated_lines_density,software_quality_reliability_issues,vulnerabilities,code_smells,coverage,security_hotspots, potslines,ncloc")
       
           echo "new_code_b64=$(echo "$NEW_CODE" | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "overall_b64=$(echo "$OVERALL" | base64 -w 0)" >> $GITHUB_OUTPUT
@@ -112,10 +112,11 @@ jobs:
             - Security rating on new code: ${newMetrics.software_quality_security_rating?.new}
             - Reliability rating on new code: ${newMetrics.software_quality_reliability_rating?.new}
             - Duplicated lines density (%) on new code: ${newMetrics.duplicated_lines_density?.new}
-            - Bugs: ${newMetrics.bugs?.new}
+            - Bugs: ${newMetrics.software_quality_reliability_issues?.new}
             - Vulnerabilities: ${newMetrics.vulnerabilities?.new}
             - Code Smells: ${newMetrics.code_smells?.new}
             - Coverage: ${newMetrics.coverage?.new}%
+            - Security hotspots on new code ${newMetrics.security_hotspots?.new}
             
             ---
             
@@ -123,10 +124,11 @@ jobs:
             - Security Rating: ${overallMetrics.software_quality_security_rating?.overall}
             - Reliability rating: ${overallMetrics.software_quality_reliability_rating?.overall}
             - Duplicated lines density (%): ${overallMetrics.duplicated_lines_density?.overall}
-            - Bugs: ${overallMetrics.bugs?.overall}
+            - Bugs: ${overallMetrics.software_quality_reliability_issues?.overall}
             - Vulnerabilities: ${overallMetrics.vulnerabilities?.overall}
             - Code Smells: ${overallMetrics.code_smells?.overall}
             - Coverage: ${overallMetrics.coverage?.overall}%
+            - Security hotspots ${overallMetrics.security_hotspots?.overall}
             - Lines: ${overallMetrics.lines?.overall}
             - ncloc: ${overallMetrics.ncloc?.overall}
             
