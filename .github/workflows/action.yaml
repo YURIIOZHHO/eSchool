@@ -42,11 +42,11 @@ jobs:
             -Dsonar.projectKey=eschool-backend-final-project \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=$BASE_BRANCH \
-            -DskipTests \
-            -Dmaven.project.sourceRoots.warningsDisabled=true
+            -DskipTests
+            # -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            # -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            # -Dsonar.pullrequest.base=$BASE_BRANCH \
+
 
 
       - name: SonarQube Quality Gate check
