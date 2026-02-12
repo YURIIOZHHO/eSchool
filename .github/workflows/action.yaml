@@ -61,8 +61,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          REPORT=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "${{ secrets.SONAR_HOST_URL }}/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
+          REPORT=$(curl -s -u "$SONAR_TOKEN":" \
+            "$SONAR_HOST_URL/api/measures/component?component=eschool-backend-final-project&metricKeys=bugs,vulnerabilities,code_smells,coverage,lines,ncloc")
           echo "report=$REPORT" >> $GITHUB_OUTPUT
       
       - name: Post SonarQube results to PR
