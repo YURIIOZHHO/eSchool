@@ -9,13 +9,13 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   sonar:
     name: SonarQube Scan
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
   
     steps:
       - name: Checkout code
