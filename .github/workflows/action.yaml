@@ -35,18 +35,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-
-          BASE_BRANCH=master
-
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=eschool-backend-final-project \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.pullrequest.base=master \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=master
             -DskipTests
-            # -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            # -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-
 
 
 
