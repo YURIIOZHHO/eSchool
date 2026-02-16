@@ -15,7 +15,7 @@ jobs:
   sonar:
     name: SonarQube Scan
     runs-on: ubuntu-latest
-    # if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -39,10 +39,11 @@ jobs:
             -Dsonar.projectKey=eschool-backend-final-project \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=master \
             -DskipTests
-            # -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            # -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            # -Dsonar.pullrequest.base=master \
+
             
 
       - name: SonarQube Quality Gate check
